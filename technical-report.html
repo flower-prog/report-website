@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bioinfoysis: A Multi-Agent Framework for Long-Horizon Bioinformatics Analysis — DeepAutonomy Technical Report</title>
+<meta name="description" content="Technical report introducing Bioinfoysis, a multi-agent framework for long-horizon, artifact-grounded bioinformatics analysis, achieving 82.4% accuracy on BixBench.">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+<link rel="stylesheet" href="assets/css/style.css?v=20260817-report7">
+</head>
+<body class="report-page">
+<div class="site-shell">
+
+<header class="da-header">
+  <div class="da-brand">
+    <img src="assets/img/da-logo.png" alt="DeepAutonomy">
+    <span>DeepAutonomy</span>
+  </div>
+  <!-- Update href to the Bioinfoysis official website URL -->
+  <a class="btn btn-ghost" href="https://www.bioinfoysis.com/" target="_blank" rel="noopener">Bioinfoysis Official Website <span class="arrow">→</span></a>
+</header>
+
+<!-- ============================================================
+     REUSABLE TECHNICAL REPORT TEMPLATE
+     ------------------------------------------------------------
+     Blocks below are designed to be copied for future reports:
+       1. 
+<!-- Report hero -->
+<section class="page-hero">
+  <div class="hero-glow g1"></div>
+  <div class="container">
+    <div class="hero-badge"><span class="dot"></span>Technical Report</div>
+    <h1>Bioinfoysis: A Multi-Agent Framework for Long-Horizon Bioinformatics Analysis</h1>
+    <p>A persistent, artifact-grounded analysis harness that combines adaptive planning, governed skills, and controlled execution — achieving state-of-the-art accuracy on BixBench.</p>
+  </div>
+</section>
+
+<article class="report-article">
+  <div class="container">
+  <nav class="report-toc" aria-label="Table of contents">
+    <span class="toc-label">Contents</span>
+    <a href="#abstract" class="active">Abstract</a>
+    <a href="#introduction">Introduction</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#infrastructure">Agent Infrastructure</a>
+    <a href="#evaluation">Evaluation</a>
+    <a href="#authors">Authors</a>
+    <a href="#demo">Demo</a>
+    <a href="#citation">Citation</a>
+  </nav>
+
+    <!-- Metadata & links -->
+    <section id="abstract">
+      <div class="report-links">
+        <!-- Update href to the arXiv abstract page once the report is published -->
+        <a class="btn btn-primary" href="#" target="_blank" rel="noopener">Read the Paper <span class="arrow">→</span></a>
+        <!-- Update href to the Hugging Face model/dataset page -->
+        <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">Hugging Face <span class="arrow">→</span></a>
+      </div>
+      <div class="report-meta">
+        <span>August 2026</span>
+        <span class="sep">·</span>
+        <span>DeepAutonomy Team</span>
+      </div>
+
+      <!-- Abstract -->
+      <div class="report-abstract">
+        <span class="lab">Abstract</span>
+        <p>Bioinfoysis is a multi-agent harness that represents each request as a persistent, artifact-grounded analysis run. It combines global planning with step-wise, evidence-driven replanning, coordinates specialized agents through structured handoffs, and preserves every intermediate artifact, trace, and decision needed to inspect, recover, or verify an analysis. On BixBench, Bioinfoysis achieves state-of-the-art accuracy of 82.4%. Across four underlying language models on LAB-Bench2, the harness raises average accuracy from 41.65% to 69.69% on SeqQA2 and from 3.13% to 27.60% on DbQA2.</p>
+      </div>
+    </section>
+
+    <!-- 1. Introduction -->
+    <section id="introduction">
+      <span class="report-kicker">01 · Introduction</span>
+      <h2 class="report-h2">Why bioinformatics needs a governed execution harness</h2>
+      <div class="report-body">
+        <p>Modern bioinformatics analysis is long-horizon by nature: a single request can require data inspection, tool selection, statistical modeling, code execution, and interpretation across many dependent steps. General-purpose language models can reason about individual steps, but they struggle to keep a multi-hour analysis coherent — intermediate results are lost, workflows drift, and outputs become impossible to verify.</p>
+        <p>Bioinfoysis addresses this with a governed execution harness. The system treats each analysis as a first-class, persistent run, and its quality is judged not only by the final answer, but by whether the path to that answer can be <strong>executed, inspected, recovered, and verified</strong>. Five capabilities define the design:</p>
+        <ul>
+          <li><strong>Coordinated multi-agent analysis</strong> — specialized roles for planning, research, coding, and reporting, coordinated through structured handoffs.</li>
+          <li><strong>Evidence-grounded, skill-governed execution</strong> — claims must be backed by executed code and validated artifacts; bioinformatics skills encode domain-correct procedures.</li>
+          <li><strong>Role-specific context and persistent memory</strong> — each agent sees a tailored, budget-aware view of the run, with evidence-backed memory across runs.</li>
+          <li><strong>Structured handoffs and artifact continuity</strong> — results carry their provenance, artifacts, and uncertainty forward.</li>
+          <li><strong>Trace-based audit and evaluation</strong> — every call, tool use, and failure is recorded for audit and recovery.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2. Architecture -->
+    <section id="architecture">
+      <span class="report-kicker">02 · Architecture</span>
+      <h2 class="report-h2">Three layers, five roles</h2>
+      <div class="report-body">
+        <p>The system is organized into three layers: an <strong>orchestration layer</strong> that maintains an adaptive plan and checklist; a <strong>scientific capability and execution layer</strong> providing tools, governed skills, isolated code execution, and artifact validation; and an <strong>observability layer</strong> that records traces, analytics, and audit records.</p>
+        <figure class="report-figure">
+          <img src="assets/img/report/framework.jpg" alt="Bioinfoysis multi-agent architecture: orchestration, capability and execution, and observability layers">
+          <figcaption><b>Figure 1.</b> Overview of the Bioinfoysis framework. Five functional roles — coordinator, planner, researcher, coder, and reporter — operate over an adaptive checklist, with an optional human-feedback gate. After the plan is accepted, the planner enters planner-supervisor mode, reviewing step outcomes and triggering replanning when evidence demands it.</figcaption>
+        </figure>
+        <h3>Adaptive planning</h3>
+        <p>Unlike fixed plan-then-execute pipelines, Bioinfoysis replans step-wise. The planner issues a global plan, then revises the remaining checklist as intermediate results arrive — a failed statistical test, an unexpected data shape, or a contradictory finding can all trigger a bounded, evidence-driven replan rather than a blind continuation.</p>
+        <h3>Governed skills and tools</h3>
+        <p>Domain correctness is encoded as skills: reusable, versioned procedures (differential expression, enrichment, variant calling, QC) that specify applicable inputs, assumptions, and expected artifacts. Skills constrain the coder to scientifically defensible workflows instead of ad-hoc script generation.</p>
+      </div>
+    </section>
+
+    <!-- 3. Agent Infrastructure -->
+    <section id="infrastructure">
+      <span class="report-kicker">03 · Agent Infrastructure</span>
+      <h2 class="report-h2">Persistent runs and artifact-grounded execution</h2>
+      <div class="report-body">
+        <h3>Persistent runs and controlled execution</h3>
+        <p>Each analysis is stored as a persistent run with a stable identifier, registered inputs, workflow state, an ordered event history, and an artifact index. Runs execute in run-specific workspaces with serialized state-changing operations, so concurrent analyses cannot overwrite one another, and interrupted runs resume from a valid checkpoint under the same identifier.</p>
+        <h3>Role-specific context and persistent memory</h3>
+        <p>The full conversation is never dumped into every prompt. Each role receives a tailored view — the planner sees the task and checklist, the coder sees the active step and relevant inputs, the reporter sees validated results. Large tool outputs are stored outside the prompt behind stable identifiers, and only evidence-backed facts from completed runs are promoted to persistent memory.</p>
+        <h3>Artifact-grounded execution</h3>
+        <p>Generated outputs are managed as run artifacts, not paths mentioned in a response. Reported scripts, tables, and figures are resolved inside the permitted workspace, checked for existence, and validated against the requested output. Before completion, public artifacts are frozen and indexed with content hashes; if a required deliverable cannot be published, the run is not reported as successful.</p>
+        <h3>Trace, audit, and recovery</h3>
+        <p>A sanitized public event stream serves users, while an internal trace records agent calls, tool use, retrieval, and failures. Recovery is checkpoint-based: publication and memory updates are protected from double-application, and cancellation stops at safe workflow boundaries, leaving runs resumable.</p>
+      </div>
+      <div class="report-callout">
+        <span>System quality is judged by whether the path to an answer can be executed, inspected, recovered, and verified — not by the answer alone.</span>
+      </div>
+    </section>
+
+    <!-- 4. Evaluation -->
+    <section id="evaluation">
+      <span class="report-kicker">04 · Evaluation</span>
+      <h2 class="report-h2">State of the art on BixBench, consistent gains on LAB-Bench2</h2>
+      <div class="report-body">
+        <p>We evaluate on a complementary benchmark suite: <strong>BixBench</strong>, 61 real-world analysis capsules yielding 205 open-ended questions across ~20 domains, measuring end-to-end executable analysis; and <strong>LAB-Bench2</strong>, where we focus on SeqQA2 (400 questions) and DbQA2 (86 questions), measuring sequence-analysis reasoning and database retrieval.</p>
+
+        <h3>BixBench: 82.4% accuracy, first place</h3>
+        <p>With Kimi-K2.6 as the underlying agent model, Bioinfoysis answers 169 of 205 questions correctly, outperforming the second-ranked GPT Rosalind by 7.3 percentage points and exceeding GPT-5.4 Agent and Grok-4.2 Agent by 9.2 and 9.6 points. Against bioinformatics-oriented systems, it improves over Biomni Lab and BioAgent by 30.2 and 33.6 points. Because bioinformatics conventions can change conclusions, our evaluation additionally audits code-execution correctness, artifact generation, and traceability — see the full report for the benchmark audit protocol.</p>
+      </div>
+
+      <figure class="report-figure">
+        <img src="assets/img/report/bixbench.jpg" alt="BixBench leaderboard comparing Bioinfoysis with general-purpose and bioinformatics agent systems">
+        <figcaption><b>Figure 2.</b> BixBench leaderboard. Bioinfoysis achieves the highest accuracy of 82.4% (169/205), outperforming the second-ranked system by 7.3 percentage points.</figcaption>
+      </figure>
+
+      <div class="report-table-wrap">
+        <table class="report-table">
+          <caption><span class="no">Table 1</span>Domain-wise results of Bioinfoysis (Kimi-K2.6) on BixBench</caption>
+          <thead>
+            <tr><th>Domain</th><th class="t-num">Capsules</th><th class="t-num">Correct</th><th class="t-num">Questions</th><th class="t-num">Accuracy</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Functional Genomics &amp; Pathway Enrichment</td><td class="t-num">9</td><td class="t-num">22</td><td class="t-num">31</td><td class="t-num">70.97%</td></tr>
+            <tr><td>Genomic Variant Analysis</td><td class="t-num">7</td><td class="t-num">14</td><td class="t-num">16</td><td class="t-num">87.50%</td></tr>
+            <tr><td>Transcriptomics &amp; Differential Expression</td><td class="t-num">10</td><td class="t-num">30</td><td class="t-num">42</td><td class="t-num">71.43%</td></tr>
+            <tr><td>Phylogenetics &amp; Comparative Genomics</td><td class="t-num">15</td><td class="t-num">45</td><td class="t-num">51</td><td class="t-num">88.24%</td></tr>
+            <tr><td>Epigenomics</td><td class="t-num">2</td><td class="t-num">9</td><td class="t-num">12</td><td class="t-num">75.00%</td></tr>
+            <tr><td>Clinical Research &amp; Biostatistics</td><td class="t-num">3</td><td class="t-num">16</td><td class="t-num">18</td><td class="t-num">88.89%</td></tr>
+            <tr><td>Bioimaging &amp; Quantitative Phenotyping</td><td class="t-num">4</td><td class="t-num">21</td><td class="t-num">21</td><td class="t-num">100.00%</td></tr>
+            <tr><td>Single-Cell Transcriptomics</td><td class="t-num">1</td><td class="t-num">2</td><td class="t-num">2</td><td class="t-num">100.00%</td></tr>
+            <tr><td>Proteomics</td><td class="t-num">1</td><td class="t-num">4</td><td class="t-num">4</td><td class="t-num">100.00%</td></tr>
+            <tr><td>Multi-Omics Integration &amp; Machine Learning</td><td class="t-num">1</td><td class="t-num">2</td><td class="t-num">2</td><td class="t-num">100.00%</td></tr>
+            <tr><td>Microbial Genomics &amp; Antimicrobial Resistance</td><td class="t-num">1</td><td class="t-num">4</td><td class="t-num">6</td><td class="t-num">66.67%</td></tr>
+            <tr class="total"><td>Overall</td><td class="t-num">54</td><td class="t-num">169</td><td class="t-num">205</td><td class="t-num">82.44%</td></tr>
+          </tbody>
+        </table>
+        <div class="report-table-note">Errors concentrate in Functional Genomics (70.97%) and Transcriptomics (71.43%), which together account for 21 of 36 incorrect answers — tasks where dependent decisions (sample selection, model specification, identifier conversion) let early errors propagate. 100% results in small categories (2–4 questions) should not be read as uniformly solved capability.</div>
+      </div>
+
+      <div class="report-body">
+        <h3>LAB-Bench2: large, consistent gains across four models</h3>
+        <p>On SeqQA2, Bioinfoysis improves every evaluated model, with gains of 30.50, 36.89, and 34.50 points for Kimi-K2.6, DeepSeek, and GLM. Many sequence-analysis questions can be converted into deterministic operations, and the harness decomposes them into explicit, executable steps. DbQA2 is far harder for direct inference — base models average just 3.13% — while Bioinfoysis reaches 27.60% on average by completing the full retrieve–process–answer workflow.</p>
+      </div>
+
+      <div class="report-table-wrap">
+        <table class="report-table">
+          <caption><span class="no">Table 2</span>LAB-Bench2 success rates: Bioinfoysis vs. base model</caption>
+          <thead>
+            <tr><th>Benchmark</th><th>System</th><th class="t-num">Kimi-K2.6</th><th class="t-num">GPT-5.5</th><th class="t-num">DeepSeek</th><th class="t-num">GLM-5.2</th><th class="t-num">Average</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SeqQA2 (400 q)</td><td>Bioinfoysis</td><td class="t-num"><b>66.00%</b></td><td class="t-num"><b>75.00%</b></td><td class="t-num"><b>68.50%</b></td><td class="t-num"><b>69.25%</b></td><td class="t-num"><span class="up">69.69%</span></td></tr>
+            <tr><td></td><td>Base model</td><td class="t-num">35.50%</td><td class="t-num">64.75%</td><td class="t-num">31.61%</td><td class="t-num">34.75%</td><td class="t-num">41.65%</td></tr>
+            <tr><td>DbQA2 (86 q)</td><td>Bioinfoysis</td><td class="t-num"><b>30.20%</b></td><td class="t-num"><b>37.20%</b></td><td class="t-num"><b>22.10%</b></td><td class="t-num"><b>20.90%</b></td><td class="t-num"><span class="up">27.60%</span></td></tr>
+            <tr><td></td><td>Base model</td><td class="t-num">1.60%</td><td class="t-num">7.80%</td><td class="t-num">3.10%</td><td class="t-num">0.00%</td><td class="t-num">3.13%</td></tr>
+          </tbody>
+        </table>
+        <div class="report-table-note">SeqQA2 uses Kimi-K2.6, GPT-5.5, DeepSeek-V4-Pro, and GLM-5.2. For DbQA2, the reported base model for DeepSeek is DeepSeek-V4-Flash, making that column a system-level rather than strictly model-matched comparison.</div>
+      </div>
+
+      <figure class="report-figure">
+        <img src="assets/img/report/labbench2_seqqa2_task_heatmap_updated.jpg" alt="Category-level heatmap of SeqQA2 success rates across models and systems">
+        <figcaption><b>Figure 3.</b> Category-level performance on SeqQA2. Each cell reports the success rate for one of the 20 SeqQA2 task categories under a given model and system configuration; darker red indicates higher accuracy. Gains extend broadly across categories rather than concentrating in a few.</figcaption>
+      </figure>
+
+      <div class="report-body">
+        <h3>Ablations: memory and skills dominate</h3>
+        <p>On all 205 BixBench questions with GPT-5.4, removing persistent memory costs 22.44 points and removing bioinformatics skills costs 19.02 points — the two largest contributors. ReAct-style planning contributes 6.83 points, and removing the entire skill catalog drops accuracy to 42.44%. The harness also transfers across models, holding 77–82% accuracy with Kimi-K2.6, GPT-5.4, and DeepSeek-V4-Pro.</p>
+      </div>
+
+      <div class="report-table-wrap">
+        <table class="report-table">
+          <caption><span class="no">Table 3</span>Component ablations on BixBench (Δ Acc. relative to full GPT-5.4 configuration)</caption>
+          <thead>
+            <tr><th>Configuration</th><th>Agent model</th><th class="t-num">Skills</th><th class="t-num">Accuracy</th><th class="t-num">Correct</th><th class="t-num">Δ Acc.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Bioinfoysis (full)</td><td>Kimi-K2.6</td><td class="t-num">78</td><td class="t-num"><b>82.44%</b></td><td class="t-num">169/205</td><td class="t-num"><span class="up">+3.41</span></td></tr>
+            <tr><td>Bioinfoysis (full)</td><td>GPT-5.4</td><td class="t-num">78</td><td class="t-num">79.02%</td><td class="t-num">162/205</td><td class="t-num">0.00</td></tr>
+            <tr><td>Bioinfoysis (full)</td><td>DeepSeek-V4-Pro</td><td class="t-num">78</td><td class="t-num">77.07%</td><td class="t-num">158/205</td><td class="t-num"><span class="down">−1.95</span></td></tr>
+            <tr><td>w/o ReAct-style planning</td><td>GPT-5.4</td><td class="t-num">78</td><td class="t-num">72.20%</td><td class="t-num">148/205</td><td class="t-num"><span class="down">−6.83</span></td></tr>
+            <tr><td>w/o memory</td><td>GPT-5.4</td><td class="t-num">78</td><td class="t-num">56.59%</td><td class="t-num">116/205</td><td class="t-num"><span class="down">−22.44</span></td></tr>
+            <tr><td>w/o bioinformatics skills</td><td>GPT-5.4</td><td class="t-num">30</td><td class="t-num">60.00%</td><td class="t-num">123/205</td><td class="t-num"><span class="down">−19.02</span></td></tr>
+            <tr><td>w/o all skills</td><td>GPT-5.4</td><td class="t-num">0</td><td class="t-num">42.44%</td><td class="t-num">87/205</td><td class="t-num"><span class="down">−36.59</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <!-- 5. Authors -->
+    <section id="authors">
+      <span class="report-kicker">05 · Authors</span>
+      <h2 class="report-h2">Author list and acknowledgments</h2>
+      <div class="report-body">
+        <div class="authors-block">
+          <span class="lab">Core Contributors</span>
+          <p>Qingyang Shao, Xin Zhang, Zhouyang Yuan, Xianying Chen.</p>
+        </div>
+        <div class="authors-block">
+          <span class="lab">Contributors</span>
+          <p>Yujia Xiang, Zihao Yang, Tong Ye, Yangqi Zhang, Jiakang Xu, Xiaoqing Yan, Xuan Luo, Keyi Li, Enci Fan, Kai Kang, Zhuohan Liu, Xingyu Jin, Chunran Teng, Tao Li, Xinyu Lv*, Minghui Wang*, Wenfeng Li*, Yidan Gao*, Siyu Liu, Mingrui Luo, Zhu Liang.</p>
+        </div>
+        <div class="authors-block">
+          <span class="lab">Project Leaders</span>
+          <p>Guanren Qiao (guanrenqiao1@link.cuhk.edu.cn), Zhiping Xu (zhiping_xu@dascience.cn).</p>
+        </div>
+        <p class="authors-note">* indicates individuals who have since left the team.</p>
+      </div>
+    </section>
+
+    <!-- 6. Demo video -->
+    <section id="demo">
+      <span class="report-kicker">06 · Demo</span>
+      <h2 class="report-h2">See Bioinfoysis in action</h2>
+      <div class="report-body">
+        <div class="report-video">
+          <!-- Replace the placeholder with the real video once ready:
+               <video controls preload="metadata" src="assets/video/demo.mp4"></video> -->
+          <div class="report-video-placeholder">
+            <div class="video-play">▶</div>
+            <span>Demo video coming soon</span>
+          </div>
+        </div>
+        <p class="report-video-caption">An end-to-end analysis run: from a natural-language request to a verified, artifact-grounded report.</p>
+      </div>
+    </section>
+
+    <!-- 7. Citation -->
+    <section id="citation">
+      <span class="report-kicker">07 · Citation</span>
+      <h2 class="report-h2">Citing Bioinfoysis</h2>
+      <div class="report-body">
+        <p>If Bioinfoysis helps your research, please cite the report:</p>
+        <div class="report-bibtex">
+          <button type="button" class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText).then(function(b){b.innerText='COPIED';setTimeout(function(){b.innerText='COPY'},1500)}.bind(this))">COPY</button>
+          <pre>@article{shao2026bioinfoysis,
+  title   = {Bioinfoysis: A Multi-Agent Framework for Long-Horizon
+             Bioinformatics Analysis},
+  author  = {Shao, Qingyang and Zhang, Xin and Yuan, Zhouyang and
+             Chen, Xianying and others},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</pre>
+        </div>
+      </div>
+    </section>
+
+
+  </div>
+</article>
+
+
+</div>
+<script>
+(function () {
+  var toc = document.querySelector('.report-toc');
+  if (!toc) return;
+  var links = Array.prototype.slice.call(toc.querySelectorAll('a[href^="#"]'));
+  var sections = links
+    .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
+    .filter(Boolean);
+  var current = null;
+  function setActive(id) {
+    if (current === id) return;
+    current = id;
+    links.forEach(function (a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) setActive(e.target.id); });
+  }, { rootMargin: '-15% 0px -75% 0px' });
+  sections.forEach(function (sec) { io.observe(sec); });
+
+  var dodgeTargets = Array.prototype.slice.call(
+    document.querySelectorAll('.report-figure, .report-table-wrap')
+  );
+  var shifted = false;
+  function checkShift() {
+    var top = 96;
+    var bottom = top + toc.offsetHeight;
+    var hit = false;
+    for (var i = 0; i < dodgeTargets.length; i++) {
+      var r = dodgeTargets[i].getBoundingClientRect();
+      if (r.bottom > top && r.top < bottom) { hit = true; break; }
+    }
+    if (hit !== shifted) {
+      shifted = hit;
+      toc.classList.toggle('is-shifted', hit);
+    }
+  }
+  window.addEventListener('scroll', checkShift, { passive: true });
+  window.addEventListener('resize', checkShift);
+  checkShift();
+})();
+</script>
+<script src="assets/js/main.js?v=20260817-report7"></script>
+</body>
+</html>
