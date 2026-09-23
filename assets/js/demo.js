@@ -82,7 +82,7 @@ function renderGrid() {
   const caseLabel = zh ? '案例' : 'CASE';
   const bgLabel = zh ? '任务背景' : 'Task Background';
   const reportLabel = zh ? '浏览报告' : 'View Report';
-  grid.innerHTML = cases.map((item, index) => `<article class="case-card"><video controls controlslist="nodownload noplaybackrate" disablepictureinpicture preload="none" playsinline oncontextmenu="return false" src="${item.video}"></video><div class="case-copy"><span class="case-index">${caseLabel} ${String(index + 1).padStart(2, '0')}</span><h2>${pick(item, 'title')}</h2><p>${pick(item, 'desc')}</p><div class="case-actions"><button class="primary-button" data-open="${index}">${bgLabel}</button><button class="secondary-button" data-open-report="${index}">${reportLabel}</button></div></div></article>`).join('');
+  grid.innerHTML = cases.map((item, index) => `<article class="case-card"><video controls controlslist="nodownload noplaybackrate" disablepictureinpicture preload="metadata" playsinline oncontextmenu="return false" src="${item.video}"></video><div class="case-copy"><span class="case-index">${caseLabel} ${String(index + 1).padStart(2, '0')}</span><h2>${pick(item, 'title')}</h2><p>${pick(item, 'desc')}</p><div class="case-actions"><button class="primary-button" data-open="${index}">${bgLabel}</button><button class="secondary-button" data-open-report="${index}">${reportLabel}</button></div></div></article>`).join('');
 }
 
 const title = document.querySelector('#dialog-title');
